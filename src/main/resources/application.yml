@@ -1,4 +1,7 @@
 spring:
+  profiles:
+    active: local
+
   devtools:
     livereload:
       enabled: true
@@ -6,4 +9,8 @@ spring:
       enable: false
   freemarker:
     cache: false
+
+  redis:
+    port: 6379
+
 

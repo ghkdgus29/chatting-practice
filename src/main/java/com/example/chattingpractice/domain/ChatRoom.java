@@ -3,11 +3,16 @@ package com.example.chattingpractice.domain;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class ChatRoom {
+public class ChatRoom implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 12513214123480L;
 
     private String roomId;
     private String name;
