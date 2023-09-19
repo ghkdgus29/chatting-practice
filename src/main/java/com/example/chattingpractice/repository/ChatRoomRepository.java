@@ -17,7 +17,7 @@ public class ChatRoomRepository {
     }
 
     public List<ChatRoom> findAllRoom() {
-       List<ChatRoom> chatRooms = new ArrayList<>(chatRoomMap.values());
+        List<ChatRoom> chatRooms = new ArrayList<>(chatRoomMap.values());
         Collections.reverse(chatRooms);
         return chatRooms;
     }
