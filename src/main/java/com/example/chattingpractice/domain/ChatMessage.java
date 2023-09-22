@@ -1,26 +1,31 @@
 package com.example.chattingpractice.domain;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatMessage {
 
-    public enum MessageType {
-        ENTER, TALK
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
 
-    private MessageType type;   // 메시지 타입
-    private String roomId;      // 방번호
-    private String sender;      // 메시지 보낸 사람
-    private String message;     // 메시지
+    private String message;
+    private LocalDateTime time;
+    @OneToOne(fetch = FetchType.LAZY)
+    private User sender;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private ChatRoom chatRoom;
 
-    public static ChatMessage create(String sender, String message) {
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.sender = sender;
-        chatMessage.message = message;
-
-        return chatMessage;
+    public ChatMessage(String message, LocalDateTime time, User sender, ChatRoom chatRoom) {
+        this.message = message;
+        this.time = time;
+        this.sender = sender;
+        this.chatRoom = chatRoom;
     }
 }

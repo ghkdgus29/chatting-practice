@@ -1,51 +1,52 @@
 package com.example.chattingpractice.controller;
 
-import com.example.chattingpractice.domain.ChatMessage;
+import com.example.chattingpractice.domain.ChatRoom;
+import com.example.chattingpractice.domain.ChatRoomUser;
+import com.example.chattingpractice.domain.User;
+import com.example.chattingpractice.domain.dto.ChatMessageDTO;
 import com.example.chattingpractice.repository.ChatRoomRepository;
+import com.example.chattingpractice.repository.ChatRoomUserRepository;
+import com.example.chattingpractice.service.ChatRoomSessionService;
+import com.example.chattingpractice.util.SessionConstant;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.socket.messaging.SessionConnectedEvent;
-import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 @RequiredArgsConstructor
 @Controller
-@Slf4j
 public class ChatController {
 
     private final SimpMessageSendingOperations messagingTemplate;
+    private final ChatRoomSessionService chatRoomSessionService;
+    private final ChatRoomUserRepository chatRoomUserRepository;
     private final ChatRoomRepository chatRoomRepository;
 
-    @MessageMapping("/chat/message")
-    public void message(ChatMessage message, SimpMessageHeaderAccessor headerAccessor) {
-        if (ChatMessage.MessageType.ENTER.equals(message.getType())) {
-            headerAccessor.getSessionAttributes().put("username", message.getSender());
-            headerAccessor.getSessionAttributes().put("roomId", message.getRoomId());
+    @MessageMapping("/chat/enter")
+    public void enterRoom(ChatMessageDTO message, SimpMessageHeaderAccessor messageHeaderAccessor) {
+        User sessionUser = (User) messageHeaderAccessor.getSessionAttributes().get(SessionConstant.SESSION_USER);
 
-            chatRoomRepository.findRoomById(message.getRoomId()).increaseUserCount();
-            message.setMessage(message.getSender() + "님이 입장하셨습니다.");
+        ChatRoom chatRoom = chatRoomRepository.findByRoomId(message.getRoomId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방에 접근하여 메시지 전송"));
+
+        if (chatRoomUserRepository.existsByUserAndChatRoom(sessionUser, chatRoom)) {
+            return;
         }
+
+        chatRoomUserRepository.save(new ChatRoomUser(chatRoom, sessionUser));
+
+        message.setMessage("나님 입장!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        message.setSender(sessionUser.getName());
         messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
     }
 
-    @EventListener
-    public void webSocketDisconnectListener(SessionDisconnectEvent event) {
-        log.info("DisConn {}", event);
 
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+    @MessageMapping("/chat/message")
+    public void message(ChatMessageDTO message, SimpMessageHeaderAccessor messageHeaderAccessor) {
+        User sessionUser = (User) messageHeaderAccessor.getSessionAttributes().get(SessionConstant.SESSION_USER);
 
-        String username = (String) headerAccessor.getSessionAttributes().get("username");
-        String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
-
-        chatRoomRepository.findRoomById(roomId).minusUserCount();
-
-        ChatMessage chat = ChatMessage.create(username, username + "님이 퇴장하였습니다.");
-
-        messagingTemplate.convertAndSend("/sub/chat/room/" + roomId, chat);
+        message.setSender(sessionUser.getName());
+        messagingTemplate.convertAndSend("/sub/chat/room/" + message.getRoomId(), message);
     }
 }

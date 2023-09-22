@@ -1,31 +1,30 @@
 package com.example.chattingpractice.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
 
+@Entity
 @Getter
 @Setter
 public class ChatRoom {
 
-    private String roomId;
-    private String name;
-    private int userCount;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
 
-    public static ChatRoom create(String name) {
+    private String roomId;
+    private String roomName;
+
+    public static ChatRoom create(String roomName) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.roomId = UUID.randomUUID().toString();
-        chatRoom.name = name;
-        chatRoom.userCount = 0;
+        chatRoom.roomName = roomName;
         return chatRoom;
-    }
-
-    public void increaseUserCount() {
-        userCount += 1;
-    }
-
-    public void minusUserCount() {
-        userCount -= 1;
     }
 }

@@ -17,7 +17,7 @@
 <body>
 <div class="container" id="app" v-cloak>
     <div>
-        <h2>{{room.name}}</h2>
+        <h2>{{room.roomName}}</h2>
     </div>
     <div class="input-group">
         <div class="input-group-prepend">
@@ -65,11 +65,11 @@
                 axios.get('/chat/room/'+this.roomId).then(response => { this.room = response.data; });
             },
             sendMessage: function() {
-                ws.send("/pub/chat/message", {}, JSON.stringify({type:'TALK', roomId:this.roomId, sender:this.sender, message:this.message}));
+                ws.send("/pub/chat/message", {}, JSON.stringify({roomId:this.roomId, message:this.message}));
                 this.message = '';
             },
             recvMessage: function(recv) {
-                this.messages.unshift({"type":recv.type,"sender":recv.type=='ENTER'?'[알림]':recv.sender,"message":recv.message})
+                this.messages.unshift({"sender":recv.sender,"message":recv.message})
             }
         }
     });
@@ -79,7 +79,7 @@
             var recv = JSON.parse(message.body);
             vm.recvMessage(recv);
         });
-        ws.send("/pub/chat/message", {}, JSON.stringify({type:'ENTER', roomId:vm.$data.roomId, sender:vm.$data.sender}));
+        ws.send("/pub/chat/enter", {}, JSON.stringify({roomId:vm.$data.roomId}));
     }, function(error) {
         alert("error "+error);
     });

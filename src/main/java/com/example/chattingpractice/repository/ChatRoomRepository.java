@@ -1,34 +1,12 @@
 package com.example.chattingpractice.repository;
 
 import com.example.chattingpractice.domain.ChatRoom;
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.*;
+import java.util.Optional;
 
-@Repository
-public class ChatRoomRepository {
+public interface ChatRoomRepository extends JpaRepository<ChatRoom, Integer> {
 
-    private Map<String, ChatRoom> chatRoomMap;
+    Optional<ChatRoom> findByRoomId(String roomId);
 
-    @PostConstruct
-    private void init() {
-        chatRoomMap = new LinkedHashMap<>();
-    }
-
-    public List<ChatRoom> findAllRoom() {
-        List<ChatRoom> chatRooms = new ArrayList<>(chatRoomMap.values());
-        Collections.reverse(chatRooms);
-        return chatRooms;
-    }
-
-    public ChatRoom findRoomById(String id) {
-        return chatRoomMap.get(id);
-    }
-
-    public ChatRoom createChatRoom(String name) {
-        ChatRoom chatRoom = ChatRoom.create(name);
-        chatRoomMap.put(chatRoom.getRoomId(), chatRoom);
-        return chatRoom;
-    }
 }

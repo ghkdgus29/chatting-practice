@@ -1,5 +1,6 @@
 package com.example.chattingpractice.config;
 
+import com.example.chattingpractice.interceptor.HandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -19,6 +20,7 @@ public class WebSockConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp")
+                .addInterceptors(new HandshakeInterceptor())
                 .withSockJS();
     }
 }
